@@ -4,7 +4,7 @@ dotenv.config();
 const SHEETS_API_KEY = process.env["SHEETS_API_KEY"];
 const SPREADSHEET_ID = process.env["SPREADSHEET_ID"];
 
-function listInfo() {
+async function listInfo(): Promise<Map<string, string[]>> {
   const sheets = google.sheets("v4");
   // key=Spreadsheet roles, value=Discord roles
   const OFFICER_ROLES = new Map(
@@ -24,17 +24,12 @@ function listInfo() {
   );
 
   // Get roles from google sheets
-  sheets.spreadsheets.values.batchGet(
+  const res = await sheets.spreadsheets.values.batchGet(
     {
       spreadsheetId: SPREADSHEET_ID,
       ranges: ["Officers!A:A", "Officers!I:I"],
       key: SHEETS_API_KEY,
-    },
-    (err: any, res) => {
-      if (err) {
-        console.error(err);
-        return new Map<string, string[]>();
-      }
+    });
 
       // Check roles and discordTags are there
       const rows = res?.data.valueRanges;
@@ -78,14 +73,12 @@ function listInfo() {
             }
           }
         }
-        // TODO: Make it so that it goes through the discord bot to actually update everyone's roles!
-        const outputMap = Array.from(output.entries());
-        console.log(outputMap);
-        //console.log(output);
-        //return output;
+        
+        return output;
       }
     }
-  );
-}
 
-listInfo();
+    const promise = listInfo();
+    promise.then(function(result) {
+      console.log(promise);
+    });
